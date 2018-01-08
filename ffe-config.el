@@ -52,10 +52,15 @@
 (define-error 'ffe-config-error "ffe-config error")
 (define-error 'ffe-config-undefined-error "Undefined config" 'ffe-config-error)
 (define-error 'ffe-config-no-straight-error "Straight.el not found or initialized" 'ffe-config-error)
+(define-error 'ffe-config-invalid-name-error "Invalid name for configuration (should be symbol)" 'ffe-config-error)
 
 (cl-defun ffe-config (name docstring &rest args &key deps init packs config)
   "Define configuration."
 
+  ;; NAME must be symbol
+  (unless (symbolp name)
+    (signal 'ffe-config-invalid-name-error name))
+  
   ;; Check dependencies existance
   (cl-mapc (lambda (dep)
              (unless (ffe-config-p dep)

@@ -72,3 +72,8 @@
                 :packs '(cl-lib)
                 :config (lambda () (ignore)))
     ))
+
+(Then "^I cannot define configuration with string name$"
+  (lambda ()
+    (should-error (ffe-config "string" "Some doc") :type 'ffe-config-invalid-name-error)
+    ))

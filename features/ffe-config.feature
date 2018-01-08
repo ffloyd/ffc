@@ -1,4 +1,4 @@
-Feature: Defining confuguration via ffe-config macro
+Feature: Defining confuguration via ffe-config function
   In order to define new configuration
   User invoke ffe-config function
 
@@ -13,6 +13,9 @@ Feature: Defining confuguration via ffe-config macro
     When I define empty configuration "example"
     Then I should have "example" defined
     But I should not have "example" loaded
+
+  Scenario: Define configuration with string as name
+    Then I cannot define configuration with string name
     
   Scenario: Define two dependent cofigurations
     When I define empty configuration "dependency"

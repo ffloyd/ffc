@@ -32,6 +32,14 @@
      (ffe-config 'example "Some doc" :packs '(cl-lib))
      (should (alist-get 'example ffe-config-alist)))))
 
+(ert-deftest ffe-config/string-as-name ()
+  "Should raise error if name isn't symbol"
+
+  (with-sandbox
+   (should-error
+    (ffe-config "example" "Some doc")
+    :type 'ffe-config-invalid-name-error)))
+
 (ert-deftest ffe-config-p/test ()
   "Return t only for defined config"
 
