@@ -77,3 +77,8 @@
   (lambda ()
     (should-error (ffe-config "string" "Some doc") :type 'ffe-config-invalid-name-error)
     ))
+
+(Then "^I cannot define configuration \"\\([^\"]+\\)\"$"
+  (lambda (name)
+    (should-error (ffe-config (intern name) "Some doc") :type 'ffe-config-already-defined-error)
+    ))

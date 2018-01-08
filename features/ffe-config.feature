@@ -40,3 +40,7 @@ Feature: Defining confuguration via ffe-config function
     Given I have straight.el loaded
     When I define configuration "example" with all keyword arguments
     Then I should have "example" defined
+
+  Scenario: Redefine configuration
+    Given I define empty configuration "example"
+    Then I cannot define configuration "example"
