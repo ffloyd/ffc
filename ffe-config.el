@@ -122,6 +122,19 @@
   ;; Register config as loaded
   (push name ffe-config-loaded-list))
 
+(defun ffe-config-safe-load (name)
+  "Safe load defined configuration"
+
+  (let ((result t))
+    (condition-case-unless-debug err
+        (ffe-config-load name)
+      (error (message
+              "Error hapened while loading '%S' and its dependencies: %S"
+              name (error-message-string err))
+             (setq result nil)))
+  
+  result))
+
 (defun ffe-config-loaded-p (name)
   "Checks if config with given identifier present"
 
