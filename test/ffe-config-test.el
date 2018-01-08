@@ -47,12 +47,31 @@
    (push (cons 'example "Some config") ffe-config-alist)
    (should (ffe-config-p 'example))
    (should-not (ffe-config-p 'not-example))))
+
+(ert-deftest ffe-config-load/undefined-configuration ()
+  "Raises error if configuration undefined"
+
+  (with-sandbox
+   (should-error
+    (ffe-config-load 'example)
+    :type 'ffe-config-undefined-error)))
+
+(ert-deftest ffe-config-load/load-dependecies ()
+  "Sucessfully loads dependencies"
+
+  (with-sandbox
+   (ffe-config 'dependency "Dependency description")
+   (ffe-config 'example "Config description" :deps '(dependency))
+   (ffe-config-load 'example)
+   (should (ffe-config-loaded-p 'example))
+   (should (ffe-config-loaded-p 'dependency))))
+  
  
 (ert-deftest ffe-config-loaded-p/test ()
   "Return t only for defined config"
 
   (with-sandbox
-   (push (cons 'example "Some config") ffe-config-loaded-list)
+   (push 'example ffe-config-loaded-list)
    (should (ffe-config-loaded-p 'example))
    (should-not (ffe-config-loaded-p 'not-example))))
  

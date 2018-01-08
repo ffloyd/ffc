@@ -20,6 +20,10 @@
 (Setup
  ;; Before anything has run
  (defvar ffe-config-test/straight-installed)
+ (defvar ffe-config-test/test-dep-fetched)
+ (defvar ffe-config-test/test-dep-required)
+ (defvar ffe-config-test/init-callback-executed)
+ (defvar ffe-config-test/config-callback-executed)
 
  (defun ffe-config-test/featurep-patch (real-impl feature)
    "Straight.el installation simulation patch"
@@ -28,7 +32,24 @@
        ffe-config-test/straight-installed
      (real feature)))
    
+ (defun ffe-config-test/require-patch (real-impl feature)
+   "(require 'test-dep) simulation patch"
+
+   (if (equal 'test-dep feature)
+       (progn
+         (setq ffe-config-test/test-dep-required t)
+         t)
+     (real feature)))
+   
+ (defun straight-use-package (package)
+   "(straight-use-package 'test-dep) simulation patch"
+
+   (if (equal 'test-dep package)
+       (setq ffe-config-test/test-dep-fetched t)
+     (error "Unexpected straight-use-package call: %S" package)))
+   
  (advice-add 'featurep :around 'ffe-config-test/featurep-patch)
+ (advice-add 'require :around 'ffe-config-test/require-patch)
  )
 
 (Before
@@ -38,11 +59,16 @@
 (After
  ;; After each scenario is run
  (setq ffe-config-alist nil)
- (setq ffe-config-loaded-alist nil)
+ (setq ffe-config-loaded-list nil)
  (setq ffe-config-test/straight-installed nil)
+ (setq ffe-config-test/init-callback-executed nil)
+ (setq ffe-config-test/config-callback-executed nil)
+ (setq ffe-config-test/test-dep-fetched nil)
+ (setq ffe-config-test/test-dep-required nil)
  )
 
 (Teardown
  ;; After when everything has been run
  (advice-remove 'featurep 'ffe-config-test/featurep-patch)
+ (advice-remove 'require 'ffe-config-test/require-patch)
  )

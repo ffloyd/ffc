@@ -53,6 +53,7 @@
 (define-error 'ffe-config-undefined-error "Undefined config" 'ffe-config-error)
 (define-error 'ffe-config-no-straight-error "Straight.el not found or initialized" 'ffe-config-error)
 (define-error 'ffe-config-invalid-name-error "Invalid name for configuration (should be symbol)" 'ffe-config-error)
+(define-error 'ffe-config-double-load-error "Config already loaded" 'ffe-config-error)
 
 (cl-defun ffe-config (name docstring &rest args &key deps init packs config)
   "Define configuration."
@@ -72,11 +73,12 @@
       (unless (featurep 'straight)
         (signal 'ffe-config-no-straight-error nil)))
   
-  (let* ((config-alist `((:name . ,name)
-                         (:docstring . ,docstring)
-                         (:deps . ,deps)
-                         (:packs . ,packs)
-                         (:config . ,config)))
+  (let* ((config-alist `((name . ,name)
+                         (docstring . ,docstring)
+                         (deps . ,deps)
+                         (init . ,init)
+                         (packs . ,packs)
+                         (config . ,config)))
          (config-cons (cons name config-alist)))
     (push config-cons ffe-config-alist)))
 
@@ -85,10 +87,40 @@
 
   (if (alist-get name ffe-config-alist) t))
 
+(defun ffe-config-load (name)
+  "Loads defined configuration"
+
+  ;; Check for defined config
+  (unless (ffe-config-p name)
+    (signal 'ffe-config-undefined-error `(,name)))
+
+  ;; Prevent double loading
+  (if (ffe-config-loaded-p name)
+      (signal 'ffe-config-double-load-error `(,name)))
+  
+  ;; Unsafe loading of feature
+  (let-alist (alist-get name ffe-config-alist)
+    (if .deps
+        (cl-mapc (lambda (dep)
+                   (unless (ffe-config-loaded-p dep)
+                     (ffe-config-load dep)))
+                 .deps))
+    (if .init
+        (funcall .init))
+    (if .packs
+        (progn
+          (cl-mapc #'straight-use-package .packs)
+          (cl-mapc #'require .packs)))
+    (if .config
+        (funcall .config)))
+
+  ;; Register config as loaded
+  (push name ffe-config-loaded-list))
+
 (defun ffe-config-loaded-p (name)
   "Checks if config with given identifier present"
 
-  (if (alist-get name ffe-config-loaded-list) t))
+  (if (member name ffe-config-loaded-list) t))
 
 (provide 'ffe-config)
 
