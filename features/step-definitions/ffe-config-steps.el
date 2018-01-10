@@ -1,84 +1,119 @@
-;; This file contains your project specific step definitions. All
-;; files in this directory whose names end with "-steps.el" will be
-;; loaded automatically by Ecukes.
+;;
+;; Step definitions
+;;
+
+(Given "^I have no configurations$"
+       (lambda ()
+         (ignore)))
 
 (When "^I define empty configuration \"\\([^\"]+\\)\"$"
-  (lambda (name)
-    (ffe-config (intern name) "Some configuration description")
-    ))
+      (lambda (name-str)
+        (let ((name (intern name-str)))
+          (ffe-config name "Some config"))))
 
-(Then "^I should have \"\\([^\"]+\\)\" defined$"
-  (lambda (config)
-    (should (ffe-config-p (intern config)))
-    ))
+(Then "^I have defined configurations:$"
+      (lambda (name-strings)
+        (let ((names (hf/strll-to-syml name-strings)))
+          (cl-mapc (lambda (name)
+                     (should (ffe-config-p name)))
+                   names))))
 
-(But "^I should not have \"\\([^\"]+\\)\" loaded$"
-  (lambda (config)
-    (should-not (ffe-config-loaded-p (intern config)))
-    ))
+(When "^I define configuration \"\\([^\"]+\\)\" with params:$"
+      (lambda (name-str kwargs-table)
+        (hf/define-config name-str kwargs-table)))
 
-(And "^I define empty configuration \"\\([^\"]+\\)\" with dependency \"\\([^\"]+\\)\"$"
-  (lambda (name dep)
-    (let ((name-sym (intern name))
-          (dep-sym (intern dep)))
-      (ffe-config name-sym "Some configuration description"
-                  :deps `(,dep-sym)))
-    ))
+(Then "^I get error when defining configuration \"\\([^\"]+\\)\" with params:$"
+      (lambda (name-str kwargs-table)
+        (should-error (hf/define-config name-str kwargs-table))))
 
-(Given "^I have no defined configurations$"
-  (lambda ()
-    (ignore)
-    ))
+(Given "^I have no straight.el initialized$"
+       (lambda ()
+         (ignore)))
 
-(Then "^I cannot define configuration \"\\([^\"]+\\)\" with dependency \"\\([^\"]+\\)\"$"
-  (lambda (name dep)
-    (let ((name-sym (intern name))
-          (dep-sym (intern dep)))
-      (should-error (ffe-config name-sym "Some configuration description"
-                                :deps `(,dep-sym))))
-    ))
+(Given "^I have straight.el initialized$"
+       (lambda ()
+         (setq ffe-config-test/straight-installed t)))
 
-(Given "^I have straight.el loaded$"
-  (lambda ()
-    (setq ffe-config-test/straight-installed t)
-    ))
+(When "^I load configuration \"\\([^\"]+\\)\"$"
+      (lambda (name-str)
+        (let ((name (intern name-str)))
+          (ffe-config-load name))))
 
-(When "^I define configuration \"\\([^\"]+\\)\" with package \"\\([^\"]+\\)\"$"
-  (lambda (name pack)
-    (let ((name-sym (intern name))
-          (pack-sym (intern pack)))
-      (ffe-config name-sym "Some configuration description"
-                  :packs `(,pack-sym)))
-    ))
+(Then "^I have loaded configurations:$"
+      (lambda (name-strings)
+        (let ((names (hf/strll-to-syml name-strings)))
+          (cl-mapc (lambda (name)
+                     (should (ffe-config-loaded-p name)))
+                   names))))
 
-(Given "^I haven't straight.el$"
-  (lambda ()
-    (setq ffe-config-test/straight-installed nil)
-    ))
+(Then "^I get error when loading configuration \"\\([^\"]+\\)\"$"
+      (lambda (name-str)
+        (let ((name (intern name-str)))
+          (should-error (ffe-config-load name)))))
 
-(Then "^I cannot define configuration \"\\([^\"]+\\)\" with package \"\\([^\"]+\\)\"$"
-  (lambda (name pack)
-    (let ((name-sym (intern name))
-          (pack-sym (intern pack)))
-      (should-error (ffe-config name-sym "Some configuration description"
-                                :packs `(,pack-sym))))
-    ))
+(Then "^I have package \"test-dep\" fetched$"
+      (lambda ()
+        (should ffe-config-test/test-dep-fetched)))
 
-(When "^I define configuration \"\\([^\"]+\\)\" with all keyword arguments$"
-  (lambda (name)
-    (ffe-config (intern name) "Some configuration description"
-                :deps '()
-                :init (lambda () (ignore))
-                :packs '(cl-lib)
-                :config (lambda () (ignore)))
-    ))
+(And "^I have package \"test-dep\" required$"
+     (lambda ()
+       (should ffe-config-test/test-dep-required)))
 
-(Then "^I cannot define configuration with string name$"
-  (lambda ()
-    (should-error (ffe-config "string" "Some doc") :type 'ffe-config-invalid-name-error)
-    ))
+(Then "^I have :init callback executed$"
+      (lambda ()
+        (should ffe-config-test/init-callback-executed)))
 
-(Then "^I cannot define configuration \"\\([^\"]+\\)\"$"
-  (lambda (name)
-    (should-error (ffe-config (intern name) "Some doc") :type 'ffe-config-already-defined-error)
-    ))
+(And "^I have :conf callback executed$"
+     (lambda ()
+       (should ffe-config-test/conf-callback-executed)))
+
+(When "^I safe load configuration \"\\([^\"]+\\)\"$"
+      (lambda (name-str)
+        (let ((name (intern name-str)))
+          (ffe-config-safe-load name))))
+
+(Then "^I have no loaded configurations$"
+      (lambda ()
+        (should-not ffe-config-loaded-list)))
+
+;;
+;; Helper functions
+;;
+
+(defun hf/table-to-plist (table)
+  "Extracts parsed elisp value from Gherkin table
+
+For example this expression:
+
+(let ((table '((\"header1\" \"header2\") . ((\"one\" \"symbol\")
+                                        (\"two\" \"(list)\")
+                                        (\"three\" \"\\\"string\\\"\")))))
+  (ffe-config/table-to-kwargs table))
+
+equals following form: (:one symbol :two (list) :three \"string\") 
+"
+
+  (let ((rows (cdr table))
+        (reducer (lambda (acc el)
+                   (let* ((raw-key (car el))
+                          (key (car (read-from-string (concat ":" raw-key))))
+                          (raw-value (eval (cadr el)))
+                          (value (car (read-from-string raw-value))))
+                     (plist-put acc key value)
+                   ))))
+    (cl-reduce reducer rows :initial-value '())))
+
+
+(defun hf/define-config (name-str kwars-table)
+
+  (let* ((name (intern name-str))
+         (kwargs (hf/table-to-plist kwars-table))
+         (sexp `(ffe-config ',name "Some Doc" ,@kwargs)))
+    (eval sexp)))
+
+(defun hf/strll-to-syml (strings)
+  "Converts list like ((\"one\") (\"two\")) to (one two)" 
+
+  (cl-mapcar (lambda (str-in-list)
+               (intern (car str-in-list)))
+             strings))

@@ -56,7 +56,7 @@
 (define-error 'ffe-config-double-load-error "Config already loaded" 'ffe-config-error)
 (define-error 'ffe-config-already-defined-error "Config already defined" 'ffe-config-error)
 
-(cl-defun ffe-config (name docstring &rest args &key deps init packs config)
+(cl-defun ffe-config (name docstring &rest args &key deps init packs conf)
   "Define configuration."
 
   ;; NAME must be symbol
@@ -83,7 +83,7 @@
                          (deps . ,deps)
                          (init . ,init)
                          (packs . ,packs)
-                         (config . ,config)))
+                         (conf . ,conf)))
          (config-cons (cons name config-alist)))
     (push config-cons ffe-config-alist)))
 
@@ -116,8 +116,8 @@
         (progn
           (cl-mapc #'straight-use-package .packs)
           (cl-mapc #'require .packs)))
-    (if .config
-        (funcall .config)))
+    (if .conf
+        (funcall .conf)))
 
   ;; Register config as loaded
   (push name ffe-config-loaded-list))

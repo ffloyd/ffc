@@ -19,19 +19,25 @@
 
 (Setup
  ;; Before anything has run
+
+ ;; define helper variables
  (defvar ffe-config-test/straight-installed)
  (defvar ffe-config-test/test-dep-fetched)
  (defvar ffe-config-test/test-dep-required)
  (defvar ffe-config-test/init-callback-executed)
- (defvar ffe-config-test/config-callback-executed)
+ (defvar ffe-config-test/conf-callback-executed)
 
+ ;; mock featurep function
  (defun ffe-config-test/featurep-patch (real-impl feature)
    "Straight.el installation simulation patch"
 
    (if (equal 'straight feature)
        ffe-config-test/straight-installed
      (real feature)))
+
+ (advice-add 'featurep :around 'ffe-config-test/featurep-patch)
    
+ ;; mock require function
  (defun ffe-config-test/require-patch (real-impl feature)
    "(require 'test-dep) simulation patch"
 
@@ -41,15 +47,18 @@
          t)
      (real feature)))
    
+ (advice-add 'require :around 'ffe-config-test/require-patch)
+
+ ;; mock straight-use-package function
  (defun straight-use-package (package)
    "(straight-use-package 'test-dep) simulation patch"
 
    (if (equal 'test-dep package)
        (setq ffe-config-test/test-dep-fetched t)
      (error "Unexpected straight-use-package call: %S" package)))
-   
- (advice-add 'featurep :around 'ffe-config-test/featurep-patch)
- (advice-add 'require :around 'ffe-config-test/require-patch)
+
+ ;; supress messages during testing
+ (advice-add 'message :around 'ignore)
  )
 
 (Before
@@ -57,7 +66,7 @@
  )
 
 (After
- ;; After each scenario is run
+ ;; After each scenario is run reset all realted variables
  (setq ffe-config-alist nil)
  (setq ffe-config-loaded-list nil)
  (setq ffe-config-test/straight-installed nil)
@@ -71,4 +80,5 @@
  ;; After when everything has been run
  (advice-remove 'featurep 'ffe-config-test/featurep-patch)
  (advice-remove 'require 'ffe-config-test/require-patch)
+ (advice-remove 'message 'ignore)
  )
