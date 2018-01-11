@@ -115,7 +115,11 @@
     (if .packs
         (progn
           (cl-mapc #'straight-use-package .packs)
-          (cl-mapc #'require .packs)))
+          (let ((pkg-require (lambda (pack)
+                               (if (symbolp pack)
+                                   (require pack)
+                                 (require (car pack))))))
+            (cl-mapc pkg-require .packs))))
     (if .conf
         (funcall .conf)))
 

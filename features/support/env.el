@@ -53,7 +53,9 @@
  (defun straight-use-package (package)
    "(straight-use-package 'test-dep) simulation patch"
 
-   (if (equal 'test-dep package)
+   (if (or
+        (equal 'test-dep package)
+        (equal 'test-dep (car package)))
        (setq ffe-config-test/test-dep-fetched t)
      (error "Unexpected straight-use-package call: %S" package)))
 
