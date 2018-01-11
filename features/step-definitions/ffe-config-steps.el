@@ -76,6 +76,15 @@
       (lambda ()
         (should-not ffe-config-loaded-list)))
 
+(When "^I safe load all configurations$"
+      (lambda ()
+        (ffe-config-safe-load-all)))
+
+(Then "^I have loaded exact following configurations:$"
+      (lambda (name-strings)
+        (let ((names (hf/strll-to-syml name-strings)))
+          (should (equal names ffe-config-loaded-list)))))
+
 ;;
 ;; Helper functions
 ;;

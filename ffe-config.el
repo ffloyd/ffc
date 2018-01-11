@@ -140,6 +140,12 @@
 
   (if (member name ffe-config-loaded-list) t))
 
+(defun ffe-config-safe-load-all ()
+  "Safe loads all defined configurations"
+
+  (let ((config-names (cl-mapcar #'car ffe-config-alist)))
+    (cl-mapc #'ffe-config-safe-load config-names)))
+
 (provide 'ffe-config)
 
 ;;; ffe-config.el ends here
