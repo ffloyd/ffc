@@ -2,8 +2,8 @@ Feature: Loading configuration
   In order to load defined configuration
   User applies `ffe-config-load` function
 
-  Scenario: Loading empty configuration
-    Given I define empty configuration "example"
+  Scenario: Loading empty configuration with docstring
+    Given I define empty configuration "example" with docstring "Some description"
     When I load configuration "example"
     Then I have loaded configurations:
       | example |
@@ -21,7 +21,12 @@ Feature: Loading configuration
     Then I have loaded configurations:
       | dependency |
       | example    |
-      
+    And I have messages in message log:
+      | Loading feature ’dependency’...      |
+      | Loading feature ’dependency’... done |
+      | Loading feature ’example’...         |
+      | Loading feature ’example’... done    |
+
   Scenario: Shared dependency
     Given I define empty configuration "dependency"
     And I define configuration "example1" with params:

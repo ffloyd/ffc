@@ -11,7 +11,9 @@ Feature: Safe loading
   Scenario: Load undefined config
     Given I have no configurations
     When I safe load configuration "example"
-    Then I have no loaded configurations
+    Then I have no loaded configurations 
+    And I have messages in message log:
+      | Error hapened while loading ’example’ and its dependencies: "Undefined config: example" |
 
   Scenario: Load incorrect config
     Given I define configuration "example" with params:
@@ -19,3 +21,6 @@ Feature: Safe loading
       | init  | (lambda () (error "Unfortunately, fuckoff!" )) |
     When I safe load configuration "example"
     Then I have no loaded configurations
+    And I have messages in message log:
+      | Error hapened while loading ’example’ and its dependencies: "Unfortunately, fuckoff!" |
+

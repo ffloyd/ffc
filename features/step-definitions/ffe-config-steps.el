@@ -93,6 +93,21 @@
 (When "^I define configuration \"\\([^\"]+\\)\" via ffc macros with params:$"
       (lambda (name-str kwargs-table)
         (hf/define-config-ffc name-str kwargs-table)))
+
+(Given "^I define empty configuration \"\\([^\"]+\\)\" with docstring \"\\([^\"]+\\)\"$"
+       (lambda (name-str docstring)
+         (ffe-config (intern name-str) docstring)))
+
+(And "^I have messages in message log:$"
+     (lambda (msg-stringlists)
+       (let ((expectations (cl-mapcar #'car msg-stringlists))
+             (checker (lambda (str)
+                        (unless (member str ffe-config-test/messages)
+                          (error "Message have not printed: %s\nPrinted ones: %S"
+                                 str ffe-config-test/messages)))))
+         (cl-mapc checker expectations))))
+                        
+
 ;;
 ;; Helper functions
 ;;

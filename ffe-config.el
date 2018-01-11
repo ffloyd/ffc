@@ -95,6 +95,8 @@
 (defun ffe-config-load (name)
   "Loads defined configuration"
 
+  (message "Loading feature '%S'..." name)
+  
   ;; Check for defined config
   (unless (ffe-config-p name)
     (signal 'ffe-config-undefined-error `(,name)))
@@ -124,7 +126,9 @@
         (funcall .conf)))
 
   ;; Register config as loaded
-  (push name ffe-config-loaded-list))
+  (push name ffe-config-loaded-list)
+
+  (message "Loading feature '%S'... done" name))
 
 (defun ffe-config-safe-load (name)
   "Safe load defined configuration"

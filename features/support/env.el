@@ -21,11 +21,12 @@
  ;; Before anything has run
 
  ;; define helper variables
- (defvar ffe-config-test/straight-installed)
- (defvar ffe-config-test/test-dep-fetched)
- (defvar ffe-config-test/test-dep-required)
- (defvar ffe-config-test/init-callback-executed)
- (defvar ffe-config-test/conf-callback-executed)
+ (defvar ffe-config-test/straight-installed nil nil)
+ (defvar ffe-config-test/test-dep-fetched nil nil)
+ (defvar ffe-config-test/test-dep-required nil nil)
+ (defvar ffe-config-test/init-callback-executed nil nil)
+ (defvar ffe-config-test/conf-callback-executed nil nil)
+ (defvar ffe-config-test/messages nil nil)
 
  ;; mock featurep function
  (defun ffe-config-test/featurep-patch (real-impl feature)
@@ -60,7 +61,12 @@
      (error "Unexpected straight-use-package call: %S" package)))
 
  ;; supress messages during testing
- (advice-add 'message :around 'ignore)
+ (defun ffe-config-test/message-patch (real-imlp &rest args)
+   "Redirect messages to ffe-config-test/messages"
+
+   (push (apply 'format-message args) ffe-config-test/messages))
+ 
+ (advice-add 'message :around 'ffe-config-test/message-patch)
  )
 
 (Before
@@ -76,6 +82,7 @@
  (setq ffe-config-test/config-callback-executed nil)
  (setq ffe-config-test/test-dep-fetched nil)
  (setq ffe-config-test/test-dep-required nil)
+ (setq ffe-config-test/messages nil)
  )
 
 (Teardown
