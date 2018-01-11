@@ -146,6 +146,15 @@
   (let ((config-names (cl-mapcar #'car ffe-config-alist)))
     (cl-mapc #'ffe-config-safe-load config-names)))
 
+(cl-defmacro ffc (name docstring &rest args &key deps init packs conf)
+  "Syntax sugar macros around ffe-config function"
+
+  `(ffe-config ',name ,docstring
+               :deps ',deps
+               :init (lambda () ,init)
+               :packs ',packs
+               :conf (lambda () ,conf)))
+
 (provide 'ffe-config)
 
 ;;; ffe-config.el ends here

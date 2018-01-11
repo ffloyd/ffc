@@ -85,6 +85,14 @@
         (let ((names (hf/strll-to-syml name-strings)))
           (should (equal names ffe-config-loaded-list)))))
 
+(When "^I define empty configuration \"\\([^\"]+\\)\" via ffc macros$"
+      (lambda (name-str)
+        (let ((name (intern name-str)))
+          (eval `(ffc ,name "Some doc")))))
+
+(When "^I define configuration \"\\([^\"]+\\)\" via ffc macros with params:$"
+      (lambda (name-str kwargs-table)
+        (hf/define-config-ffc name-str kwargs-table)))
 ;;
 ;; Helper functions
 ;;
@@ -97,7 +105,7 @@ For example this expression:
 (let ((table '((\"header1\" \"header2\") . ((\"one\" \"symbol\")
                                         (\"two\" \"(list)\")
                                         (\"three\" \"\\\"string\\\"\")))))
-  (ffe-config/table-to-kwargs table))
+  (hf/table-to-plist table))
 
 equals following form: (:one symbol :two (list) :three \"string\") 
 "
@@ -118,6 +126,13 @@ equals following form: (:one symbol :two (list) :three \"string\")
   (let* ((name (intern name-str))
          (kwargs (hf/table-to-plist kwars-table))
          (sexp `(ffe-config ',name "Some Doc" ,@kwargs)))
+    (eval sexp)))
+
+(defun hf/define-config-ffc (name-str kwars-table)
+
+  (let* ((name (intern name-str))
+         (kwargs (hf/table-to-plist kwars-table))
+         (sexp `(ffc ,name "Some Doc" ,@kwargs)))
     (eval sexp)))
 
 (defun hf/strll-to-syml (strings)
