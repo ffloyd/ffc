@@ -83,7 +83,7 @@
 (Then "^I have loaded exact following configurations:$"
       (lambda (name-strings)
         (let ((names (hf/strll-to-syml name-strings)))
-          (should (equal names ffe-config-loaded-list)))))
+          (should (equal (reverse names) ffe-config-loaded-list)))))
 
 (When "^I define empty configuration \"\\([^\"]+\\)\" via ffc macros$"
       (lambda (name-str)

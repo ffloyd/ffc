@@ -131,7 +131,8 @@
 
   (let ((result t))
     (condition-case-unless-debug err
-        (ffe-config-load name)
+        (unless (ffe-config-loaded-p name)
+          (ffe-config-load name))
       (error (message
               "Error hapened while loading '%S' and its dependencies: %S"
               name (error-message-string err))
@@ -148,7 +149,7 @@
   "Safe loads all defined configurations"
 
   (let ((config-names (cl-mapcar #'car ffe-config-alist)))
-    (cl-mapc #'ffe-config-safe-load config-names)))
+    (cl-mapc #'ffe-config-safe-load (reverse config-names))))
 
 (cl-defmacro ffc (name docstring &rest args &key deps init packs conf)
   "Syntax sugar macros around ffe-config function"
