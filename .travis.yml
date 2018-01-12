@@ -7,6 +7,7 @@ before_install:
 env:
   - EVM_EMACS=emacs-25.1-travis
   - EVM_EMACS=emacs-25.3-travis
+  - EVM_EMACS=emacs-26-pretest-travis
 script:
   - emacs --version
   - cask exec ecukes --script --reporter spec
