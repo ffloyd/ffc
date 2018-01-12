@@ -10,4 +10,3 @@ env:
 script:
   - emacs --version
   - cask exec ecukes --script --reporter spec
-  - cask exec ert-runner
