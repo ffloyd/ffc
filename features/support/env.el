@@ -11,6 +11,10 @@
 
 (add-to-list 'load-path ffe-config-root-path)
 
+;; coverall.io
+(require 'undercover)
+(undercover "ffe-config.el")
+
 ;; Ensure that we don't load old byte-compiled versions
 (let ((load-prefer-newer t))
   (require 'ffe-config)
@@ -19,9 +23,6 @@
 
 (Setup
  ;; Before anything has run
- (require 'undercover)
- (undercover "ffe-config.el")
-
 
  ;; define helper variables
  (defvar ffe-config-test/straight-installed nil nil)
