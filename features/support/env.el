@@ -19,6 +19,9 @@
 
 (Setup
  ;; Before anything has run
+ (require 'undercover)
+ (undercover "ffe-config.el")
+
 
  ;; define helper variables
  (defvar ffe-config-test/straight-installed nil nil)
