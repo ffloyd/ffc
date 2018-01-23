@@ -1,4 +1,4 @@
-# ffc.el [![Build Status](https://travis-ci.org/ffloyd/ffe-config.svg?branch=master)](https://travis-ci.org/ffloyd/ffe-config) [![Coverage Status](https://coveralls.io/repos/github/ffloyd/ffe-config/badge.svg?branch=master)](https://coveralls.io/github/ffloyd/ffe-config?branch=master)
+# ffc.el [![Build Status](https://travis-ci.org/ffloyd/ffc.svg?branch=master)](https://travis-ci.org/ffloyd/ffc) [![Coverage Status](https://coveralls.io/repos/github/ffloyd/ffc/badge.svg?branch=master)](https://coveralls.io/github/ffloyd/ffc?branch=master)
 
 A simple Emacs configuration microframework. Make your init.el and life elegant.
 
