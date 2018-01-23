@@ -1,3 +1,6 @@
+(when (require 'undercover nil t)
+  (undercover "ffc.el"))
+
 (require 'ffc)
 
 (describe "ffc-define function"
