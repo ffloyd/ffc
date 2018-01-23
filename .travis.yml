@@ -13,4 +13,4 @@ matrix:
     - env: EVM_EMACS=emacs-26-pretest-travis
 script:
   - emacs --version
-  - cask exec ecukes --script --reporter spec
+  - cask exec buttercup -L .

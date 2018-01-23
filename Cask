@@ -1,9 +1,7 @@
 (source gnu)
 (source melpa)
 
-(package-file "ffe-config.el")
+(package-file "ffc.el")
 
 (development
- (depends-on "f")
- (depends-on "ecukes")
- (depends-on "undercover"))
+ (depends-on "buttercup"))
