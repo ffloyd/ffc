@@ -12,7 +12,7 @@
           (before-each ;; build correct arguments
            (setq name 'name-symbol)
            (setq docstring "Documentation string.")
-           (setq on-define (lambda () (ignore)))
+           (setq on-define #'ignore)
            (setq on-load (lambda () (ignore))))
            
           (it "defines new configuration when args is correct"
