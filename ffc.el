@@ -57,6 +57,7 @@
 (define-error 'ffc-invalid-on-load-error "Config ON-LOAD should be a function" 'ffc-error)
 
 (define-error 'ffc-already-defined-error "Config with such name already defined" 'ffc-error)
+(define-error 'ffc-undefined-error "Udefined config" 'ffc-error)
 
 (defun ffc-define (name docstring on-define on-load)
   "Define new configuration."
@@ -81,7 +82,16 @@
                          (on-define . ,on-define)
                          (on-load . ,on-load)))
          (config-cons (cons name config-alist)))
-    (push config-cons ffc-alist)))
+    (push config-cons ffc-alist))
+
+  (funcall on-define))
+
+(defun ffc-load (name)
+  "Load defined configuration."
+
+  (if-let ((config (alist-get name)))
+      (funcall (alist-get 'on-load config))
+    (signal 'ffc-undefined-error `(,name))))
 
 (provide 'ffc)
 ;;; ffc.el ends here

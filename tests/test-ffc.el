@@ -44,4 +44,36 @@
               (expect
                (ffc-define name docstring on-define on-load)
                :to-throw 'ffc-already-defined-error))
+
+          (it "executes ON-DEFINE function"
+              (setq on-define (lambda ()
+                                (setq executed t)))
+              (let ((executed nil))
+                (ffc-define name docstring on-define on-load)
+                (expect executed :to-be t)))
+                
           )
+
+(describe "ffc-load function"
+          :var (on-load-executed)
+
+          (before-each ;; nilify affected library variables
+           (setq ffc-alist nil))
+
+          (before-each ;; define configuration with name my-conf
+           (setq on-load-executed nil)
+           (ffc-define 'my-conf
+                       "Example configuration"
+                       #'ignore
+                       (lambda () (setq on-load-executed t))))
+
+          (it "calls ON-LOAD when configuration NAME defined"
+              (ffc-load 'my-conf)
+              (expect on-load-executed :to-be t))
+
+          (it "raises error when configuration NAME undefined"
+              (expect
+               (ffc-load 'i-am-not-defined)
+               :to-throw 'ffc-undefined-error)))
+          
+          
