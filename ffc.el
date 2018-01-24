@@ -4,7 +4,7 @@
 
 ;; Author: Roman Kolesnev <rvkolesnev@gmail.com>
 ;; Maintainer: Roman Kolesnev <rvkolesnev@gmail.com>
-;; URL: https://github.com/ffloyd/ffe-config
+;; URL: https://github.com/ffloyd/ffc
 ;; Version: 0.0.1
 ;; Package-Requires: ((emacs "25.1") (pkg-info "0.4"))
 ;; Created: 8 Jan 2018
