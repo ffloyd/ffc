@@ -89,7 +89,7 @@
 (defun ffc-load (name)
   "Load defined configuration."
 
-  (if-let ((config (alist-get name)))
+  (if-let ((config (alist-get name ffc-alist)))
       (funcall (alist-get 'on-load config))
     (signal 'ffc-undefined-error `(,name))))
 
