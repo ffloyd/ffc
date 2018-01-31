@@ -92,7 +92,13 @@
           (it "raises error when configuration NAME undefined"
               (expect
                (ffc-load 'i-am-not-defined)
-               :to-throw 'ffc-undefined-error)))
+               :to-throw 'ffc-undefined-error))
+
+          (it "raises error when configuration NAME already loaded"
+              (ffc-load 'my-conf)
+              (expect
+               (ffc-load 'my-conf)
+               :to-throw 'ffc-double-loading-error)))
           
 (describe "ffc-apply function"
           :var (execution-order)

@@ -63,6 +63,8 @@
 (define-error 'ffc-already-defined-error "Config with such name already defined" 'ffc-error)
 (define-error 'ffc-undefined-error "Udefined config" 'ffc-error)
 
+(define-error 'ffc-double-loading-error "Config with such name already loaded" 'ffc-error)
+
 (define-error 'ffc-invalid-feature-name-error
   "Feature NAME should be a keyword" 'ffc-error)
 (define-error 'ffc-invalid-feature-on-define-error
@@ -100,6 +102,9 @@
 (defun ffc-load (name)
   "Load defined configuration."
 
+  (if (member name ffc-loaded-list)
+      (signal 'ffc-double-loading-error `(,name))) 
+  
   (if-let ((config (alist-get name ffc-alist)))
       (condition-case err-var
           (progn
