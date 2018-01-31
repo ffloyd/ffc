@@ -76,4 +76,25 @@
                (ffc-load 'i-am-not-defined)
                :to-throw 'ffc-undefined-error)))
           
+(describe "ffc-apply function"
+          :var (execution-order)
           
+          (before-each ;; nilify affected library variables
+           (setq ffc-alist nil))
+
+          (it "loads configs in definition order"
+              (setq execution-order nil)
+              (ffc-define 'my-conf-1
+                          "Example configuration 1"
+                          #'ignore
+                          (lambda () (push 1 execution-order)))
+
+              (ffc-define 'my-conf-2
+                          "Example configuration 2"
+                          #'ignore
+                          (lambda () (push 2 execution-order)))
+              
+              (ffc-apply)
+
+              ;; it's not (1 2) bcs push adds element to head of a list
+              (expect execution-order :to-equal '(2 1))))

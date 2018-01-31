@@ -93,5 +93,12 @@
       (funcall (alist-get 'on-load config))
     (signal 'ffc-undefined-error `(,name))))
 
+(defun ffc-apply ()
+  "Load all unloaded configurations in definition order."
+
+  (let* ((reversed-config-names (mapcar #'car ffc-alist))
+         (config-names (reverse reversed-config-names)))
+    (mapc #'ffc-load config-names)))
+
 (provide 'ffc)
 ;;; ffc.el ends here
