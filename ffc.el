@@ -39,7 +39,11 @@
 
 (defvar ffc-alist
   nil
-  "Associative list of ffe-config definitions and its metadata.")
+  "Associative list of ffc config definitions and its metadata.")
+
+(defvar ffc-fetures-alist
+  nil
+  "Associative list of ffc macro features definitions and its metadata.")
 
 (defvar ffc-loaded-list
   nil
@@ -99,6 +103,11 @@
   (let* ((reversed-config-names (mapcar #'car ffc-alist))
          (config-names (reverse reversed-config-names)))
     (mapc #'ffc-load config-names)))
+
+(defun ffc-define-feature (key on-define-lambda on-load-lambda)
+  "Define new ffc macro feature."
+
+  (push `(,key ,on-define-lambda ,on-load-lambda) ffc-features-alist))
 
 (provide 'ffc)
 ;;; ffc.el ends here

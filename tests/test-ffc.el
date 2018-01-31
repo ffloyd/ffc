@@ -98,3 +98,21 @@
 
               ;; it's not (1 2) bcs push adds element to head of a list
               (expect execution-order :to-equal '(2 1))))
+
+(describe "ffc-define-feature function"
+          :var (on-def-lambda on-load-lambda)
+          
+          (before-each
+           (setq ffc-features-alist nil)
+
+           (setq on-def-lambda (lambda (data)
+                                 (lambda () "for on-define")))
+           (setq on-load-lambda (lambda (data)
+                                  (lambda () "for on-load"))))
+
+          (it "creates a new feature in ffc-features-alist"
+              (ffc-define-feature :feature-1
+                                  on-def-lambda
+                                  on-load-lambda)
+              (expect ffc-features-alist
+                      :to-equal `((:feature-1 ,on-def-lambda ,on-load-lambda)))))
