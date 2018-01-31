@@ -58,15 +58,33 @@
           :var (on-load-executed)
 
           (before-each ;; nilify affected library variables
-           (setq ffc-alist nil))
+           (setq ffc-alist nil)
+           (setq ffc-loaded-list nil)
+           (setq ffc-failed-alist nil))
 
           (before-each ;; define configuration with name my-conf
            (setq on-load-executed nil)
+
            (ffc-define 'my-conf
                        "Example configuration"
                        #'ignore
-                       (lambda () (setq on-load-executed t))))
+                       (lambda () (setq on-load-executed t)))
 
+           (ffc-define 'broken-conf
+                       "Example broken configuration"
+                       #'ignore
+                       (lambda () (signal 'error "I'm fucked up"))))
+
+          (it "adds correct executed config to ffc-loaded-list"
+              (ffc-load 'my-conf)
+              (expect ffc-loaded-list
+                      :to-equal '(my-conf)))
+          
+          (it "adds failed config and happened error to ffc-failed-alist"
+              (ffc-load 'broken-conf)
+              (expect ffc-failed-alist
+                      :to-equal '((broken-conf error . "I'm fucked up"))))
+          
           (it "calls ON-LOAD when configuration NAME defined"
               (ffc-load 'my-conf)
               (expect on-load-executed :to-be t))

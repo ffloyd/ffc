@@ -49,9 +49,9 @@
   nil
   "List of loaded ffe-config definitions.")
 
-(defvar ffc-failed-list
+(defvar ffc-failed-alist
   nil
-  "List of failed to load ffe-config definitions.")
+  "Associative list of failed to load ffe-config definitions connected with happened errors.")
 
 (define-error 'ffc-error "ffe-config error")
 
@@ -101,7 +101,12 @@
   "Load defined configuration."
 
   (if-let ((config (alist-get name ffc-alist)))
-      (funcall (alist-get 'on-load config))
+      (condition-case err-var
+          (progn
+            (funcall (alist-get 'on-load config))
+            (push name ffc-loaded-list))
+        (error
+         (push (cons name err-var) ffc-failed-alist)))
     (signal 'ffc-undefined-error `(,name))))
 
 (defun ffc-apply ()
