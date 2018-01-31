@@ -115,4 +115,19 @@
                                   on-def-lambda
                                   on-load-lambda)
               (expect ffc-features-alist
-                      :to-equal `((:feature-1 ,on-def-lambda ,on-load-lambda)))))
+                      :to-equal `((:feature-1 ,on-def-lambda ,on-load-lambda))))
+
+          (it "raises error if on-define-lambda is not a function"
+              (expect
+               (ffc-define-feature :feature-1 'not-a-function on-load-lambda)
+               :to-throw 'ffc-invalid-feature-on-define-error))
+
+          (it "raises error if on-load-lambda is not a function"
+              (expect
+               (ffc-define-feature :feature-1 on-def-lambda 'not-a-function)
+               :to-throw 'ffc-invalid-feature-on-load-error))
+
+          (it "raises error if key is not a keyword"
+              (expect
+               (ffc-define-feature 'not-a-keyword on-def-lambda on-load-lambda)
+               :to-throw 'ffc-invalid-feature-name-error)))

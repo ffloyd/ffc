@@ -63,6 +63,13 @@
 (define-error 'ffc-already-defined-error "Config with such name already defined" 'ffc-error)
 (define-error 'ffc-undefined-error "Udefined config" 'ffc-error)
 
+(define-error 'ffc-invalid-feature-name-error
+  "Feature NAME should be a keyword" 'ffc-error)
+(define-error 'ffc-invalid-feature-on-define-error
+  "Feature ON-DEFINE-LAMBDA should be a function" 'ffc-error)
+(define-error 'ffc-invalid-feature-on-load-error
+  "Feature ON-LOAD-LAMBDA should be a function" 'ffc-error)
+
 (defun ffc-define (name docstring on-define on-load)
   "Define new configuration."
 
@@ -106,6 +113,15 @@
 
 (defun ffc-define-feature (key on-define-lambda on-load-lambda)
   "Define new ffc macro feature."
+
+  (unless (keywordp key)
+    (signal 'ffc-invalid-feature-name-error `(,key)))
+  
+  (unless (functionp on-define-lambda)
+    (signal 'ffc-invalid-feature-on-define-error `(,on-define-lambda)))
+
+  (unless (functionp on-load-lambda)
+    (signal 'ffc-invalid-feature-on-load-error `(,on-load-lambda)))
 
   (push `(,key ,on-define-lambda ,on-load-lambda) ffc-features-alist))
 
