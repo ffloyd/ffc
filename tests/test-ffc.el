@@ -155,3 +155,30 @@
               (expect
                (ffc-define-feature 'not-a-keyword on-def-lambda on-load-lambda)
                :to-throw 'ffc-invalid-feature-name-error)))
+
+(describe "ffc-feature macro"
+          (before-each
+           (setq ffc-features-alist nil))
+
+          (it "defines feature"
+              (ffc-feature my-feature
+                           :definer (progn
+                                      "I'm definer block")
+                           :loader (progn
+                                     "I'm loader block"))
+              (expect ffc-features-alist
+                      :to-equal
+                      '((:my-feature
+                         (lambda (data)
+                           (progn "I'm definer block"))
+                         (lambda (data)
+                           (progn "I'm loader block"))))))
+
+          (it "can create empty feature"
+              (ffc-feature empty-feature)
+              (expect ffc-features-alist
+                      :to-equal
+                      '((:empty-feature
+                         (lambda (data) nil)
+                         (lambda (data) nil))))))
+                           

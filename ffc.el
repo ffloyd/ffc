@@ -135,5 +135,19 @@
 
   (push `(,key ,on-define-lambda ,on-load-lambda) ffc-features-alist))
 
+(cl-defmacro ffc-feature (key-symbol &rest args &key definer loader)
+  "Define new ffc macro feature."
+
+  `(let* ((key-str (symbol-name ',key-symbol))
+          (keyword-str (concat ":" key-str))
+          (keyword (or
+                    (intern-soft keyword-str)
+                    (intern keyword-str))))
+     (ffc-define-feature keyword
+                         (lambda (data)
+                           ,definer)
+                         (lambda (data)
+                           ,loader))))
+
 (provide 'ffc)
 ;;; ffc.el ends here
