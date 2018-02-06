@@ -1,60 +1,39 @@
-# ffc.el [![Build Status](https://travis-ci.org/ffloyd/ffc.svg?branch=master)](https://travis-ci.org/ffloyd/ffc) [![Coverage Status](https://coveralls.io/repos/github/ffloyd/ffc/badge.svg?branch=master)](https://coveralls.io/github/ffloyd/ffc?branch=master)
+# ffc.el - Ffloyd's Furious Configs [![Build Status](https://travis-ci.org/ffloyd/ffc.svg?branch=master)](https://travis-ci.org/ffloyd/ffc) [![Coverage Status](https://coveralls.io/repos/github/ffloyd/ffc/badge.svg?branch=master)](https://coveralls.io/github/ffloyd/ffc?branch=master)
 
-A simple Emacs configuration microframework. Make your init.el and life elegant.
+A simple Emacs configuration microframework. Make your init.el and life elegant in a way you choose.
 
 UNDER HEAVY DEVELOPMENT. THIS README IS NO MORE THAN QUICK DRAFT. 
 
 ## Basic concepts
 
-### Features
+* _feature_ - abstraction over _configuration section_.
+* _pipeline_ - ordered set of _features_. Order in this set defines _features'_ application order.
+* _config_ - isolated set of configuration sections (defined by _pipeline_).
 
-Using `ffc` we define our configuration as set of relitively small configuration blocks. We call this blocks _configs_.
+## Public API
 
-In elisp terms feature is a simple alist:
+Short list (everything in this list is a macros, except `ffc-apply`):
 
-``` emacs-lisp
-'((name . name-symbol)
-  (docstring . "Short feature description")
-  (on-define . (lambda () (ignore)))
-  (on-load . (lambda () (ignore))))
-```
+* `ffc-feature` - define a configuration _feature_
+* `ffc-pipeline` - define a set of used _features_ and application order
+* `ffc` - define a _config_ using _features_ from _pipeline_
+* `ffc-apply` - load all unloaded _configs_
 
-Feature lifecycle has two steps: definition and loading.
+## Private API
 
-### Defining features
+Short list (everything in this list is an function):
 
-Definition is a merely creating new feature alist and push it to global feature storage. There are no execution of user code. Two ways provided:
+* `ffc--define-feature` - feature definer
+* `ffc--setup-pipeline` - pipline definer
+* `ffc--define-config` - config definer
+* `ffc--define-config-from-features` - config definer based on features
+* `ffc--load-config` - load config by name
 
-* 'private', low-level way - using `ffc-define` function
-* 'public' way - by `ffc` macros. It built around `ffc-define` function.
+## Prdefined features library (ffc-features.el)
 
-Why so? Because `ffc-define` has only four arguments:
+Short list:
 
-* `name` - config name, elisp symbol
-* `docstring` - short human-readable description of config
-* `on-define` - callback which called after successfull config defining, function
-* `on-load` - callback which called when we load config
-
-And it's all what we need. But it's not convinient. But `ffc` macro has different approach:
-
-* has `name` and `docstring` arguments too
-* has several keyword arguments
-* builds two lambdas based on data from keyword arguments
-* uses built lambdas as `on-define` and `on-load` functions 
-* allowed keyword list is extensible by _config adapters_
-
-### Config adapters
-
-There are no enabled config adapters by default. You should activate it by calling `ffc-use` macro. Order of activation defines order of execution inside callbacks. Built-in adapters:
-
-* `deps` - checks for config dependencies
-* `init` - just executes code in `on-load` callback
-* `packs` - installs and requires packages
-* `config` - just executes code in `on-load` callback
-
-Example of activation:
-
-``` emacs-lisp
-(ffc-use '(deps init packs config))
-```
-
+* `:deps` - dependencies between configs
+* `:init` - just a named codeblock to execute while loading. Meant to be placed before packages loading.
+* `:packs` - load and require packages (via straight.el)
+* `:conf` - just a named codeblock to execute while loading. Meant to be placed before packages loading.
