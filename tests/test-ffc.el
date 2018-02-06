@@ -3,13 +3,29 @@
 
 (require 'ffc)
 
+;;
+;; Helpers
+;;
+
+(defun helper/reset-state ()
+  "Reset all FFC variables to default values"
+
+  (setq ffc-alist nil)
+  (setq ffc-features-alist nil)
+  (setq ffc-loaded-list nil)
+  (setq ffc-failed-list nil))
+
+;;
+;; Tests
+;;
+
 (describe "ffc-define function"
           :var (name docstring on-define on-load) ;; helper variables
 
-          (before-each ;; nilify affected library variables
-           (setq ffc-alist nil))
+          (before-each
+           (helper/reset-state))
           
-          (before-each ;; build correct arguments
+          (before-all ;; build correct arguments
            (setq name 'name-symbol)
            (setq docstring "Documentation string.")
            (setq on-define #'ignore)
@@ -50,19 +66,13 @@
                                 (setq executed t)))
               (let ((executed nil))
                 (ffc-define name docstring on-define on-load)
-                (expect executed :to-be t)))
-                
-          )
+                (expect executed :to-be t))))
 
 (describe "ffc-load function"
           :var (on-load-executed)
 
-          (before-each ;; nilify affected library variables
-           (setq ffc-alist nil)
-           (setq ffc-loaded-list nil)
-           (setq ffc-failed-alist nil))
-
-          (before-each ;; define configuration with name my-conf
+          (before-each
+           (helper/reset-state)
            (setq on-load-executed nil)
 
            (ffc-define 'my-conf
@@ -104,7 +114,7 @@
           :var (execution-order)
           
           (before-each ;; nilify affected library variables
-           (setq ffc-alist nil))
+           (helper/reset-state))
 
           (it "loads configs in definition order"
               (setq execution-order nil)
@@ -120,19 +130,20 @@
               
               (ffc-apply)
 
-              ;; it's not (1 2) bcs push adds element to head of a list
+              ;; it's not (1 2) bcs `push` adds element to head of a list
               (expect execution-order :to-equal '(2 1))))
 
 (describe "ffc-define-feature function"
           :var (on-def-lambda on-load-lambda)
-          
-          (before-each
-           (setq ffc-features-alist nil)
 
+          (before-all
            (setq on-def-lambda (lambda (data)
                                  (lambda () "for on-define")))
            (setq on-load-lambda (lambda (data)
                                   (lambda () "for on-load"))))
+          
+          (before-each
+           (helper/reset-state))
 
           (it "creates a new feature in ffc-features-alist"
               (ffc-define-feature :feature-1
@@ -158,7 +169,7 @@
 
 (describe "ffc-feature macro"
           (before-each
-           (setq ffc-features-alist nil))
+           (helper/reset-state))
 
           (it "defines feature"
               (ffc-feature my-feature
