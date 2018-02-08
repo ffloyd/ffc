@@ -34,8 +34,16 @@
 
 ;;; Code:
 
+;;
+;; 0xFFC dependencies
+;;
+
 (require 'cl-lib)
 (require 'subr-x)
+
+;;
+;; 0xFFC global variables
+;;
 
 (defvar ffc-alist
   nil
@@ -53,7 +61,21 @@
   nil
   "Associative list of failed to load ffe-config definitions connected with happened errors.")
 
-(define-error 'ffc-error "ffe-config error")
+;;
+;; 0xFFC errors' definitions
+;;
+
+(define-error 'ffc-error "0xFFC error")
+
+;; Feature specific
+(define-error 'ffc-feature-invalid-name-error
+  "Feature NAME should be a keyword" 'ffc-error)
+(define-error 'ffc-feature-already-defined-error
+  "Feature with such NAME already defined" 'ffc-error)
+(define-error 'ffc-feature-invalid-on-define-error
+  "Feature ON-DEFINE-LAMBDA should be a function" 'ffc-error)
+(define-error 'ffc-feature-invalid-on-load-error
+  "Feature ON-LOAD-LAMBDA should be a function" 'ffc-error)
 
 (define-error 'ffc-invalid-name-error "Config NAME should be a symbol" 'ffc-error)
 (define-error 'ffc-invalid-docstring-error "Config DOCSTRING should be a string" 'ffc-error)
@@ -65,14 +87,28 @@
 
 (define-error 'ffc-double-loading-error "Config with such name already loaded" 'ffc-error)
 
-(define-error 'ffc-invalid-feature-name-error
-  "Feature NAME should be a keyword" 'ffc-error)
-(define-error 'ffc-invalid-feature-on-define-error
-  "Feature ON-DEFINE-LAMBDA should be a function" 'ffc-error)
-(define-error 'ffc-invalid-feature-on-load-error
-  "Feature ON-LOAD-LAMBDA should be a function" 'ffc-error)
+;;
+;; 0xFFC private layer
+;;
 
-(defun ffc-define (name docstring on-define on-load)
+(defun ffc--define-feature (name on-define on-load)
+  "Define new ffc macro feature."
+
+  (unless (keywordp name)
+    (signal 'ffc-feature-invalid-name-error `(,name)))
+
+  (if (alist-get name ffc-features-alist)
+      (signal 'ffc-feature-already-defined-error `(,name)))
+  
+  (unless (functionp on-define)
+    (signal 'ffc-feature-invalid-on-define-error `(,on-define)))
+
+  (unless (functionp on-load)
+    (signal 'ffc-feature-invalid-on-load-error `(,on-load)))
+
+  (push `(,name ,on-define ,on-load) ffc-features-alist))
+
+(defun ffc--define-config (name docstring on-define on-load)
   "Define new configuration."
 
   (unless (symbolp name)
@@ -99,7 +135,7 @@
 
   (funcall on-define))
 
-(defun ffc-load (name)
+(defun ffc--load-config (name)
   "Load defined configuration."
 
   (if (member name ffc-loaded-list)
@@ -114,26 +150,9 @@
          (push (cons name err-var) ffc-failed-alist)))
     (signal 'ffc-undefined-error `(,name))))
 
-(defun ffc-apply ()
-  "Load all unloaded configurations in definition order."
-
-  (let* ((reversed-config-names (mapcar #'car ffc-alist))
-         (config-names (reverse reversed-config-names)))
-    (mapc #'ffc-load config-names)))
-
-(defun ffc-define-feature (key on-define-lambda on-load-lambda)
-  "Define new ffc macro feature."
-
-  (unless (keywordp key)
-    (signal 'ffc-invalid-feature-name-error `(,key)))
-  
-  (unless (functionp on-define-lambda)
-    (signal 'ffc-invalid-feature-on-define-error `(,on-define-lambda)))
-
-  (unless (functionp on-load-lambda)
-    (signal 'ffc-invalid-feature-on-load-error `(,on-load-lambda)))
-
-  (push `(,key ,on-define-lambda ,on-load-lambda) ffc-features-alist))
+;;
+;; 0xFFC public layer
+;;
 
 (cl-defmacro ffc-feature (key-symbol &rest args &key definer loader)
   "Define new ffc macro feature."
@@ -143,11 +162,18 @@
           (keyword (or
                     (intern-soft keyword-str)
                     (intern keyword-str))))
-     (ffc-define-feature keyword
+     (ffc--define-feature keyword
                          (lambda (data)
                            ,definer)
                          (lambda (data)
                            ,loader))))
+
+(defun ffc-apply ()
+  "Load all unloaded configurations in definition order."
+
+  (let* ((reversed-config-names (mapcar #'car ffc-alist))
+         (config-names (reverse reversed-config-names)))
+    (mapc #'ffc--load-config config-names)))
 
 (provide 'ffc)
 ;;; ffc.el ends here

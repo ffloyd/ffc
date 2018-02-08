@@ -26,7 +26,6 @@ Short list (everything in this list is an function):
 * `ffc--define-feature` - feature definer
 * `ffc--setup-pipeline` - pipline definer
 * `ffc--define-config` - config definer
-* `ffc--define-config-from-features` - config definer based on features
 * `ffc--load-config` - load config by name
 
 ## Prdefined features library (ffc-features.el)
