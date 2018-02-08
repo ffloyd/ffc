@@ -45,13 +45,13 @@
 ;; 0xFFC global variables
 ;;
 
+(defvar ffc-features-alist
+  nil
+  "Associative list of ffc macro features definitions and its metadata.")
+
 (defvar ffc-alist
   nil
   "Associative list of ffc config definitions and its metadata.")
-
-(defvar ffc-fetures-alist
-  nil
-  "Associative list of ffc macro features definitions and its metadata.")
 
 (defvar ffc-loaded-list
   nil
