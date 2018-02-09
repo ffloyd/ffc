@@ -10,8 +10,9 @@
 (defun helper/reset-state ()
   "Reset all FFC variables to default values"
 
-  (setq ffc-alist nil)
   (setq ffc-features-alist nil)
+  (setq ffc-pipeline nil)
+  (setq ffc-alist nil)
   (setq ffc-loaded-list nil)
   (setq ffc-failed-list nil))
 
@@ -64,3 +65,30 @@
                (ffc--define-feature keyword-name on-def-lambda "not-a-function")
                :to-throw 'ffc-feature-invalid-on-load-error)))
                                  
+(describe "ffc--setup-pipeline"
+          (before-each
+           (helper/reset-state)
+           
+           (ffc--define-feature :feature_a 'ignore 'ignore)
+           (ffc--define-feature :feature_b 'ignore 'ignore))
+
+          (it "setups pipeline from existing features"
+              (ffc--setup-pipeline '(:feature_a :feature_b))
+              (expect ffc-pipeline
+                      :to-equal
+                      '(:feature_a :feature_b)))
+
+          (it "forbids pipeline redefinition"
+              (ffc--setup-pipeline '(:feature_a))
+
+              (expect (ffc--setup-pipeline '(:feature_b))
+               :to-throw 'ffc-pipeline-redefinition-error)
+
+              (expect ffc-pipeline
+                      :to-equal
+                      '(:feature_a)))
+
+          (it "forbids usage of undefined features"
+              (expect (ffc--setup-pipeline '(:feature_a :undefined))
+                      :to-throw 'ffc-feature-not-found-error)))
+              

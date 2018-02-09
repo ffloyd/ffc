@@ -49,6 +49,10 @@
   nil
   "Associative list of ffc macro features definitions and its metadata.")
 
+(defvar ffc-pipeline
+  nil
+  "Ordered list of active features names.")
+
 (defvar ffc-alist
   nil
   "Associative list of ffc config definitions and its metadata.")
@@ -76,6 +80,12 @@
   "Feature ON-DEFINE-LAMBDA should be a function" 'ffc-error)
 (define-error 'ffc-feature-invalid-on-load-error
   "Feature ON-LOAD-LAMBDA should be a function" 'ffc-error)
+(define-error 'ffc-feature-not-found-error
+  "Feature not found" 'ffc-error)
+
+;; Pipeline specific
+(define-error 'ffc-pipeline-redefinition-error
+  "Pipeline may be chosen only once. Redefinition is forbidden." 'ffc-error)
 
 (define-error 'ffc-invalid-name-error "Config NAME should be a symbol" 'ffc-error)
 (define-error 'ffc-invalid-docstring-error "Config DOCSTRING should be a string" 'ffc-error)
@@ -107,6 +117,19 @@
     (signal 'ffc-feature-invalid-on-load-error `(,on-load)))
 
   (push `(,name ,on-define ,on-load) ffc-features-alist))
+
+(defun ffc--setup-pipeline (pipeline-list)
+  "Setups pipeline."
+
+  (if ffc-pipeline
+      (signal 'ffc-pipeline-redefinition-error nil))
+
+  (mapc (lambda (feature-name)
+          (unless (alist-get feature-name ffc-features-alist)
+            (signal 'ffc-feature-not-found-error `(,feature-name))))
+        pipeline-list)
+
+  (setq ffc-pipeline pipeline-list))
 
 (defun ffc--define-config (name docstring on-define on-load)
   "Define new configuration."
