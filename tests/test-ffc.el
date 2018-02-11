@@ -91,4 +91,68 @@
           (it "forbids usage of undefined features"
               (expect (ffc--setup-pipeline '(:feature_a :undefined))
                       :to-throw 'ffc-feature-not-found-error)))
+
+(describe "ffc--define-config"
+          :var (executed-list execution-lambda)
+
+          (before-all
+           (setq execution-lambda (lambda (data)
+                                    (push data executed-list))))
+          
+          (before-each
+           (helper/reset-state)
+
+           (setq executed-list nil)
+
+           (ffc--define-feature :feature_a
+                                execution-lambda
+                                'ignore)
+           (ffc--define-feature :feature_b
+                                execution-lambda
+                                'ignore)
+
+           (ffc--setup-pipeline '(:feature_a :feature_b)))
+
+          (it "defines config"
+              (ffc--define-config 'example
+                                  "Example configuration"
+                                  '((:feature_a . some-data-1)
+                                    (:feature_b . some-data-2)))
+              (expect ffc-alist
+                      :to-equal
+                      '((example . ("Example configuration" . (
+                                                               (:feature_a . some-data-1)
+                                                               (:feature_b . some-data-2)
+                                                               ))))))
+
+          (it "executes on-define features' callbacks in pipeline order"
+              (ffc--define-config 'example
+                                  "Example configuration"
+                                  '((:feature_b . some-data-2)
+                                    (:feature_a . some-data-1)))
+              (expect executed-list
+                      :to-equal
+                      '(some-data-2 some-data-1)))
+
+          (it "prevents config redefinition"
+              (ffc--define-config 'example "Example config")
+              (expect
+               (ffc--define-config 'example "Example config redefinition")
+               :to-throw 'ffc-already-defined-error))
+
+          (it "prevents using features outside pipeline"
+              (ffc--define-feature :feature_c #'ignore #'ignore)
+              (expect
+               (ffc--define-config 'example "Example config" '((:feature_c . some-data)))
+               :to-throw 'ffc-feature-not-in-pipeline-error))
+
+          (it "config NAME should be an atom"
+              (expect
+               (ffc--define-config "example" "Example config with string name")
+               :to-throw 'ffc-invalid-name-error))
+
+          (it "config DOCSTRING should be a string"
+              (expect
+               (ffc--define-config 'example 'bad-docstring)
+               :to-throw 'ffc-invalid-docstring-error)))
               

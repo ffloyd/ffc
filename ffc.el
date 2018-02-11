@@ -87,14 +87,13 @@
 (define-error 'ffc-pipeline-redefinition-error
   "Pipeline may be chosen only once. Redefinition is forbidden." 'ffc-error)
 
+;; Config defining specific
 (define-error 'ffc-invalid-name-error "Config NAME should be a symbol" 'ffc-error)
 (define-error 'ffc-invalid-docstring-error "Config DOCSTRING should be a string" 'ffc-error)
-(define-error 'ffc-invalid-on-define-error "Config ON-DEFINE should be a function" 'ffc-error)
-(define-error 'ffc-invalid-on-load-error "Config ON-LOAD should be a function" 'ffc-error)
-
 (define-error 'ffc-already-defined-error "Config with such name already defined" 'ffc-error)
-(define-error 'ffc-undefined-error "Udefined config" 'ffc-error)
+(define-error 'ffc-feature-not-in-pipeline-error "Feature not present in current pipeline" 'ffc-error) 
 
+(define-error 'ffc-undefined-error "Udefined config" 'ffc-error)
 (define-error 'ffc-double-loading-error "Config with such name already loaded" 'ffc-error)
 
 ;;
@@ -131,7 +130,14 @@
 
   (setq ffc-pipeline pipeline-list))
 
-(defun ffc--define-config (name docstring on-define on-load)
+(defun ffc--define-config/apply-feature (feature-name feature-data)
+  "Execute on-define callback if feature persists."
+
+  (if-let ((feature-callbacks (alist-get feature-name ffc-features-alist))
+           (on-define-callback (car feature-callbacks)))
+      (funcall on-define-callback feature-data)))
+
+(defun ffc--define-config (name docstring &optional features-data-alist)
   "Define new configuration."
 
   (unless (symbolp name)
@@ -140,23 +146,22 @@
   (unless (stringp docstring)
     (signal 'ffc-invalid-docstring-error `(,docstring)))
 
-  (unless (functionp on-define)
-    (signal 'ffc-invalid-on-define-error `(,on-define)))
-
-  (unless (functionp on-load)
-    (signal 'ffc-invalid-on-load-error `(,on-load)))
-
   (if (alist-get name ffc-alist)
       (signal 'ffc-already-defined-error `(,name)))
 
-  (let* ((config-alist `((name . ,name)
-                         (docstring . ,docstring)
-                         (on-define . ,on-define)
-                         (on-load . ,on-load)))
-         (config-cons (cons name config-alist)))
-    (push config-cons ffc-alist))
+  (mapc (lambda (feature-cons)
+          (let ((feature-name (car feature-cons)))
+            (unless (member feature-name ffc-pipeline)
+              (signal 'ffc-feature-not-in-pipeline-error `(,feature-name)))))
+        features-data-alist)
 
-  (funcall on-define))
+  (mapc (lambda (feature-name)
+          (let ((feature-data (alist-get feature-name features-data-alist)))
+            (ffc--define-config/apply-feature feature-name feature-data)))
+        ffc-pipeline)
+
+  (push `(,name . (,docstring . ,features-data-alist)) ffc-alist)
+)
 
 (defun ffc--load-config (name)
   "Load defined configuration."
