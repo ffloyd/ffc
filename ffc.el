@@ -131,12 +131,24 @@
 
   (setq ffc-pipeline pipeline-list))
 
-(defun ffc--define-config/apply-feature (feature-name feature-data)
-  "Execute on-define callback if feature persists."
+(defun ffc--apply-feature (feature-name feature-data execute-definer execute-loader)
+  "Apply feature."
 
-  (if-let ((feature-callbacks (alist-get feature-name ffc-features-alist))
-           (on-define-callback (car feature-callbacks)))
-      (funcall on-define-callback feature-data)))
+  (if-let ((feature-callbacks (alist-get feature-name ffc-features-alist)))
+      (let ((on-define-callback (car feature-callbacks))
+            (on-load-callback (cadr feature-callbacks)))
+        (if execute-definer
+            (funcall on-define-callback feature-data))
+        (if execute-loader
+            (funcall on-load-callback feature-data)))))
+
+(defun ffc--apply-pipeline (features-data-alist execute-definers execute-loaders)
+  "Applies pipeline to features' data alist."
+
+  (mapc (lambda (feature-name)
+          (if-let ((feature-data (alist-get feature-name features-data-alist)))
+            (ffc--apply-feature feature-name feature-data execute-definers execute-loaders)))
+        ffc-pipeline))
 
 (defun ffc--define-config (name docstring &optional features-data-alist)
   "Define new configuration."
@@ -156,20 +168,9 @@
               (signal 'ffc-feature-not-in-pipeline-error `(,feature-name)))))
         features-data-alist)
 
-  (mapc (lambda (feature-name)
-          (let ((feature-data (alist-get feature-name features-data-alist)))
-            (ffc--define-config/apply-feature feature-name feature-data)))
-        ffc-pipeline)
+  (ffc--apply-pipeline features-data-alist t nil)
 
-  (push `(,name . (,docstring . ,features-data-alist)) ffc-alist)
-)
-
-(defun ffc--load-config/apply-feature (feature-name feature-data)
-  "Execute on-define callback if feature persists."
-
-  (if-let ((feature-callbacks (alist-get feature-name ffc-features-alist))
-           (on-load-callback (cadr feature-callbacks)))
-      (funcall on-load-callback feature-data)))
+  (push `(,name . (,docstring . ,features-data-alist)) ffc-alist))
 
 (defun ffc--load-config (name)
   "Load defined configuration."
@@ -180,10 +181,7 @@
   (if-let ((config (alist-get name ffc-alist))
            (features-data-alist (cdr config)))
       (progn
-        (mapc (lambda (feature-name)
-                (let ((feature-data (alist-get feature-name features-data-alist)))
-                  (ffc--load-config/apply-feature feature-name feature-data)))
-              ffc-pipeline)
+        (ffc--apply-pipeline features-data-alist nil t)
         (push name ffc-loaded-list))
     (signal 'ffc-undefined-error `(,name))))
 
