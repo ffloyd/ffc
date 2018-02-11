@@ -155,4 +155,49 @@
               (expect
                (ffc--define-config 'example 'bad-docstring)
                :to-throw 'ffc-invalid-docstring-error)))
-              
+
+(describe "ffc--load-config"
+          :var (executed-list execution-lambda)
+
+          (before-all
+           (setq execution-lambda (lambda (data)
+                                    (push data executed-list))))
+          
+          (before-each
+           (helper/reset-state)
+
+           (setq executed-list nil)
+
+           (ffc--define-feature :feature_a
+                                #'ignore
+                                execution-lambda)
+           (ffc--define-feature :feature_b
+                                #'ignore
+                                execution-lambda)
+
+           (ffc--setup-pipeline '(:feature_a :feature_b))
+
+           (ffc--define-config 'example "Example config"
+                               '((:feature_a . some-data-1)
+                                 (:feature_b . some-data-2))))
+
+          (it "loads defined feature"
+              (ffc--load-config 'example)
+              (expect ffc-loaded-list
+                      :to-equal '(example)))
+
+          (it "cannot load undefined feature"
+              (expect
+               (ffc--load-config 'undefined-one)
+               :to-throw 'ffc-undefined-error))
+
+          (it "prevents double loading"
+              (ffc--load-config 'example)
+              (expect
+               (ffc--load-config 'example)
+               :to-throw 'ffc-double-loading-error))
+
+          (it "executes on-load callbacks"
+              (ffc--load-config 'example)
+              (expect executed-list
+                      :to-equal '(some-data-2 some-data-1))))

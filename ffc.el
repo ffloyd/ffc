@@ -93,6 +93,7 @@
 (define-error 'ffc-already-defined-error "Config with such name already defined" 'ffc-error)
 (define-error 'ffc-feature-not-in-pipeline-error "Feature not present in current pipeline" 'ffc-error) 
 
+;; Config loading specific
 (define-error 'ffc-undefined-error "Udefined config" 'ffc-error)
 (define-error 'ffc-double-loading-error "Config with such name already loaded" 'ffc-error)
 
@@ -163,19 +164,27 @@
   (push `(,name . (,docstring . ,features-data-alist)) ffc-alist)
 )
 
+(defun ffc--load-config/apply-feature (feature-name feature-data)
+  "Execute on-define callback if feature persists."
+
+  (if-let ((feature-callbacks (alist-get feature-name ffc-features-alist))
+           (on-load-callback (cadr feature-callbacks)))
+      (funcall on-load-callback feature-data)))
+
 (defun ffc--load-config (name)
   "Load defined configuration."
 
   (if (member name ffc-loaded-list)
       (signal 'ffc-double-loading-error `(,name))) 
   
-  (if-let ((config (alist-get name ffc-alist)))
-      (condition-case err-var
-          (progn
-            (funcall (alist-get 'on-load config))
-            (push name ffc-loaded-list))
-        (error
-         (push (cons name err-var) ffc-failed-alist)))
+  (if-let ((config (alist-get name ffc-alist))
+           (features-data-alist (cdr config)))
+      (progn
+        (mapc (lambda (feature-name)
+                (let ((feature-data (alist-get feature-name features-data-alist)))
+                  (ffc--load-config/apply-feature feature-name feature-data)))
+              ffc-pipeline)
+        (push name ffc-loaded-list))
     (signal 'ffc-undefined-error `(,name))))
 
 ;;
