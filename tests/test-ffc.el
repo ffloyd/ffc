@@ -207,7 +207,7 @@
            (helper/reset-state))
 
           (it "defines feature"
-              (ffc-feature cool-feature
+              (ffc-feature :cool-feature
                            :definer 'ignore
                            :loader 'ignore)
               (expect (alist-get :cool-feature ffc-features-alist)
@@ -217,11 +217,11 @@
           (before-each
            (helper/reset-state)
 
-           (ffc-feature feature-a
+           (ffc-feature :feature-a
                         :definer 'ignore
                         :loader 'ignore)
 
-           (ffc-feature feature-b
+           (ffc-feature :feature-b
                         :definer 'ignore
                         :loader 'ignore))
 

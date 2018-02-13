@@ -189,15 +189,10 @@
 ;; 0xFFC public layer
 ;;
 
-(cl-defmacro ffc-feature (key-symbol &rest args &key definer loader)
+(cl-defmacro ffc-feature (keyword-name &rest args &key definer loader)
   "Define new ffc macro feature."
 
-  `(let* ((key-str (symbol-name ',key-symbol))
-          (keyword-str (concat ":" key-str))
-          (keyword (or
-                    (intern-soft keyword-str)
-                    (intern keyword-str))))
-     (ffc--define-feature keyword ,definer ,loader)))
+  `(ffc--define-feature ,keyword-name ,definer ,loader))
 
 (defmacro ffc-pipeline (&rest features)
   "Setups pipleline."
