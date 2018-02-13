@@ -195,9 +195,33 @@
   `(ffc--define-feature ,keyword-name ,definer ,loader))
 
 (defmacro ffc-pipeline (&rest features)
-  "Setups pipleline."
+  "Setup pipleline."
 
   `(ffc--setup-pipeline ',features))
+
+(defun ffc--plist-to-alist (plist)
+  "Convert PLIST to alist."
+
+  (cdr (cl-reduce (lambda (acc elt)
+                    (let ((current-cons (car acc))
+                          (current-alist (cdr acc)))
+                      (if current-cons
+                          (let* ((next-cons nil)
+                                 (new-cons (cons current-cons elt))
+                                 (next-alist (cons new-cons current-alist)))
+                            (cons next-cons next-alist))
+                        (let ((next-cons elt)
+                              (next-alist current-alist))
+                          (cons next-cons next-alist)))))
+                  plist
+                  :initial-value '(nil . nil))))
+
+(defmacro ffc (name docstring &rest argplist)
+  "Define config."
+
+  `(ffc--define-config ',name
+                       ,docstring
+                       (ffc--plist-to-alist ',argplist)))
 
 (defun ffc-apply ()
   "Load all unloaded configurations in definition order."

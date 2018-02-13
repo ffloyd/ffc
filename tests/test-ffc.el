@@ -218,14 +218,62 @@
            (helper/reset-state)
 
            (ffc-feature :feature-a
-                        :definer 'ignore
-                        :loader 'ignore)
+                        :definer #'ignore
+                        :loader #'ignore)
 
            (ffc-feature :feature-b
-                        :definer 'ignore
-                        :loader 'ignore))
+                        :definer #'ignore
+                        :loader #'ignore))
 
           (it "setups pipeline"
               (ffc-pipeline :feature-a :feature-b)
               (expect ffc-pipeline-list
                       :to-equal '(:feature-a :feature-b))))
+
+(describe "ffc"
+          (before-each
+           (helper/reset-state)
+
+           (ffc-feature :feature-a
+                        :definer #'ignore
+                        :loader #'ignore)
+
+           (ffc-feature :feature-b
+                        :definer #'ignore
+                        :loader #'ignore)
+
+           (ffc-pipeline :feature-a :feature-b))
+
+          (it "defines config"
+              (ffc example "Example config"
+                   :feature-a t
+                   :feature-b t)
+              (expect ffc-alist
+                      :to-equal '((example "Example config" (:feature-b . t) (:feature-a . t))))))
+
+(describe "ffc-apply"
+          (before-each
+           (helper/reset-state)
+
+           (ffc-feature :feature-a
+                        :definer #'ignore
+                        :loader #'ignore)
+
+           (ffc-feature :feature-b
+                        :definer #'ignore
+                        :loader #'ignore)
+
+           (ffc-pipeline :feature-a :feature-b)
+
+           (ffc example1 "Example1 config"
+                   :feature-a t
+                   :feature-b t)
+
+           (ffc example2 "Example2 config"
+                   :feature-a t
+                   :feature-b t))
+
+          (it "loads defined configs"
+              (ffc-apply)
+              (expect ffc-loaded-list
+                      :to-equal '(example2 example1))))
