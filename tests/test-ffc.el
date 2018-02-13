@@ -11,7 +11,7 @@
   "Reset all FFC variables to default values"
 
   (setq ffc-features-alist nil)
-  (setq ffc-pipeline nil)
+  (setq ffc-pipeline-list nil)
   (setq ffc-alist nil)
   (setq ffc-loaded-list nil)
   (setq ffc-failed-list nil))
@@ -74,7 +74,7 @@
 
           (it "setups pipeline from existing features"
               (ffc--setup-pipeline '(:feature_a :feature_b))
-              (expect ffc-pipeline
+              (expect ffc-pipeline-list
                       :to-equal
                       '(:feature_a :feature_b)))
 
@@ -84,7 +84,7 @@
               (expect (ffc--setup-pipeline '(:feature_b))
                :to-throw 'ffc-pipeline-redefinition-error)
 
-              (expect ffc-pipeline
+              (expect ffc-pipeline-list
                       :to-equal
                       '(:feature_a)))
 
@@ -203,7 +203,7 @@
                       :to-equal '(some-data-2 some-data-1))))
 
 (describe "ffc-feature"
-          (before-all
+          (before-each
            (helper/reset-state))
 
           (it "defines feature"
@@ -212,3 +212,20 @@
                            :loader 'ignore)
               (expect (alist-get :cool-feature ffc-features-alist)
                       :to-equal '(ignore ignore))))
+
+(describe "ffc-pipeline"
+          (before-each
+           (helper/reset-state)
+
+           (ffc-feature feature-a
+                        :definer 'ignore
+                        :loader 'ignore)
+
+           (ffc-feature feature-b
+                        :definer 'ignore
+                        :loader 'ignore))
+
+          (it "setups pipeline"
+              (ffc-pipeline :feature-a :feature-b)
+              (expect ffc-pipeline-list
+                      :to-equal '(:feature-a :feature-b))))

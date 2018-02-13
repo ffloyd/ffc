@@ -49,7 +49,7 @@
   nil
   "Associative list of ffc macro features definitions and its metadata.")
 
-(defvar ffc-pipeline
+(defvar ffc-pipeline-list
   nil
   "Ordered list of active features names.")
 
@@ -121,7 +121,7 @@
 (defun ffc--setup-pipeline (pipeline-list)
   "Setups pipeline."
 
-  (if ffc-pipeline
+  (if ffc-pipeline-list
       (signal 'ffc-pipeline-redefinition-error nil))
 
   (mapc (lambda (feature-name)
@@ -129,7 +129,7 @@
             (signal 'ffc-feature-not-found-error `(,feature-name))))
         pipeline-list)
 
-  (setq ffc-pipeline pipeline-list))
+  (setq ffc-pipeline-list pipeline-list))
 
 (defun ffc--apply-feature (feature-name feature-data execute-definer execute-loader)
   "Apply feature."
@@ -148,7 +148,7 @@
   (mapc (lambda (feature-name)
           (if-let ((feature-data (alist-get feature-name features-data-alist)))
             (ffc--apply-feature feature-name feature-data execute-definers execute-loaders)))
-        ffc-pipeline))
+        ffc-pipeline-list))
 
 (defun ffc--define-config (name docstring &optional features-data-alist)
   "Define new configuration."
@@ -164,7 +164,7 @@
 
   (mapc (lambda (feature-cons)
           (let ((feature-name (car feature-cons)))
-            (unless (member feature-name ffc-pipeline)
+            (unless (member feature-name ffc-pipeline-list)
               (signal 'ffc-feature-not-in-pipeline-error `(,feature-name)))))
         features-data-alist)
 
@@ -198,6 +198,11 @@
                     (intern-soft keyword-str)
                     (intern keyword-str))))
      (ffc--define-feature keyword ,definer ,loader)))
+
+(defmacro ffc-pipeline (&rest features)
+  "Setups pipleline."
+
+  `(ffc--setup-pipeline ',features))
 
 (defun ffc-apply ()
   "Load all unloaded configurations in definition order."
