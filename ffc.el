@@ -197,11 +197,7 @@
           (keyword (or
                     (intern-soft keyword-str)
                     (intern keyword-str))))
-     (ffc--define-feature keyword
-                         (lambda (data)
-                           ,definer)
-                         (lambda (data)
-                           ,loader))))
+     (ffc--define-feature keyword ,definer ,loader)))
 
 (defun ffc-apply ()
   "Load all unloaded configurations in definition order."

@@ -201,3 +201,14 @@
               (ffc--load-config 'example)
               (expect executed-list
                       :to-equal '(some-data-2 some-data-1))))
+
+(describe "ffc-feature"
+          (before-all
+           (helper/reset-state))
+
+          (it "defines feature"
+              (ffc-feature cool-feature
+                           :definer 'ignore
+                           :loader 'ignore)
+              (expect (alist-get :cool-feature ffc-features-alist)
+                      :to-equal '(ignore ignore))))
