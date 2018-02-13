@@ -27,12 +27,3 @@ Short list (everything in this list is an function):
 * `ffc--setup-pipeline` - pipline definer
 * `ffc--define-config` - config definer
 * `ffc--load-config` - load config by name
-
-## Prdefined features library (ffc-features.el)
-
-Short list:
-
-* `:deps` - dependencies between configs
-* `:init` - just a named codeblock to execute while loading. Meant to be placed before packages loading.
-* `:packs` - load and require packages (via straight.el)
-* `:conf` - just a named codeblock to execute while loading. Meant to be placed before packages loading.
