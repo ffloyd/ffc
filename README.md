@@ -1,3 +1,7 @@
+# Rejected concept
+
+After some expirements I've decided that there are no reason to develop this library. It brings unecessary complexity and small amount of real benefits.
+
 # ffc.el - Ffloyd's Furious Configurations [![Build Status](https://travis-ci.org/ffloyd/ffc.svg?branch=master)](https://travis-ci.org/ffloyd/ffc) [![Coverage Status](https://coveralls.io/repos/github/ffloyd/ffc/badge.svg?branch=master)](https://coveralls.io/github/ffloyd/ffc?branch=master)
 
 A simple Emacs configuration microframework. Make your init.el and life elegant in a way you choose.
